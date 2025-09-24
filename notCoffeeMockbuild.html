@@ -1,0 +1,1055 @@
+<!-- GMAPS API KEY: AIzaSyDrF16HxTUioVYpQRWtcRzjUe4xQF4kON4 -->
+
+<HTML>
+	<head>
+		<!-- from source -->
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Not Coffee</title>
+		<!-- Font Awesome Icons -->
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"/>
+		<!-- Stylesheet -->
+		<!-- <link rel="stylesheet" href="style.css" /> -->
+		<!-- from source -->
+		
+		<!-- imported jQuery library -->
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js">  </script> <!-- JQUERY -->
+		
+		<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+		
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+		
+		<link rel="preconnect" href="https://fonts.googleapis.com"> 
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin> 
+		<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@700&display=swap" rel="stylesheet">
+		
+		
+		<!-- For Google Maps API -->
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js">  </script>
+		
+		<!-- 1️⃣ Install Magic SDK. INCLUDE THIS FOR LOGIN INTEGRATION-->
+		<script src="https://auth.magic.link/sdk"></script>
+	
+		<!-- START OF MAPBOX HEAD INPUT -->
+		<script
+			id="search-js"
+			defer
+			src="https://api.mapbox.com/search-js/v1.0.0-beta.16/web.js"
+		>
+		</script>
+		<script>        
+			const script = document.getElementById('search-js');
+			script.onload = function() {
+			mapboxsearch.autofill({
+			accessToken: 'pk.eyJ1IjoiaWNjaGEwMiIsImEiOiJjbGdiYnFta3gwNmN1M2twbTNwMWVhMWE5In0.BCn-a6SMGUanymj3ef6S4A'
+			});
+		};
+		</script>
+		<!-- END OF MAPBOX HEAD INPUT -->
+		
+		<div id="loc"> </div>
+		<!-- End of Google Maps API -->
+		
+		<script>
+		
+		// what would you like to have done on load of the page?
+			
+			window.onload = function(){	
+				console.log("LOADING // REFRESHING PAGE");
+				
+				checkMagicSDKForLoginStatus("initial-app-load"); // action ID
+				
+				// Removed this and it omitted error w/ geolocation API and others?
+				// $.getJSON("https://www.googleapis.com/geolocation/v1/geolocate?key=AIzaSyDrF16HxTUioVYpQRWtcRzjUe4xQF4kON4", function(result){
+				// 	result.setHeader("Access-Control-Allow-Origin", "*");
+				// 	console.log(result);
+				//  })
+				
+				
+			}
+			
+			$(document).ready(function() {
+				  $('input[type="checkbox"]').click(function() {
+					  if($(this).prop("checked") == true) {
+						// alert("Checkbox is checked.");
+					  }
+					  else if($(this).prop("checked") == false) {
+						// alert("Checkbox is unchecked.");
+					  }
+					});
+			});
+			
+			var mouse_is_inside = false;
+			$(document).ready(function()
+			{
+				$('#login-window').hover(function(){ 
+					mouse_is_inside=true; 
+				}, function(){ 
+					mouse_is_inside=false; 
+				});
+			
+				$("body").mouseup(function(){ 
+					console.log("HIDING IT")
+					if(!mouse_is_inside) $('#login-window').hide();
+					console.log("AFTER HIDING IT")
+				});
+			});
+			
+			$(document).ready(function()
+			{
+				$('#logoutModal').hover(function(){ 
+					mouse_is_inside=true; 
+				}, function(){ 
+					mouse_is_inside=false; 
+				});
+			
+				$("body").mouseup(function(){ 
+					if(!mouse_is_inside) $('#logoutModal').hide();
+				});
+			});
+			
+			// // To initialize modal
+			// // not necessary here
+			// $(document).ready(function(){
+			// 	$('.modal').modal();
+			// });
+
+			function debugAlert(alertContent){
+				var shouldAlert = 1;
+			
+				if(shouldAlert == 1){
+					alert(alertContent);
+				}
+				
+			}
+			
+			function closeModal(divID){
+				console.log(divID);
+				var modalInstance =  M.Modal.getInstance($(divID));
+				console.log(modalInstance);
+				modalInstance.close();
+			}
+			
+			function loginWindow(){
+				$("#login-window").css("display", "block");
+				// var modalInstance =  M.Modal.getInstance($("#login-window"));
+				// modalInstance.open();
+			}
+							
+			function autoLoc() {
+				// alert("Autolocation was clicked!");
+				
+				// get the location:
+				if (navigator.geolocation) {
+					console.log("Geolocation clicked");
+					position = navigator.geolocation.getCurrentPosition(showPosition);
+					
+				} else {
+					console.log("Geolocation is not supported by this browser.");
+				}
+			}
+			
+			function showPosition(position) {
+				console.log("IN SHOW POS");
+				console.log(position);
+				
+				console.log("LAT " + position.coords.latitude); 
+				console.log("LONG " + position.coords.longitude);
+				
+				long = position.coords.longitude;
+				lat = position.coords.latitude;
+			
+				// $("#loc").append("Latitude: " + position.coords.latitude + "<br>Longitude: " + position.coords.longitude);
+			
+				autoLocSubmit(long, lat);
+			}
+			
+			function autoLocSubmit(long, lat) {
+				 
+				 console.log("In Auto Loc Submit Function function");
+				 
+				$("#optionResults").empty();
+				 
+				 // locVar = document.getElementById('specAddr').value;
+				 // console.log(locVar);
+				 // termVar = document.getElementById('what-dropdown').value;
+				
+				 // console.log("Customer's Chosen Location: " + locVar);
+				  
+				 var boxes = $(":checkbox:checked");
+				 console.log(boxes);
+				  
+				 customerBevs = [];
+				 
+				 for(i = 0; i < boxes.length; i++){
+					 // alert(i + " is " + boxes[i].checked);
+					 if(boxes[i].checked == true){
+						 bev = boxes[i].id;
+						 console.log("BEV " + bev);
+						 customerBevs.push(bev); // THIS WORKS!
+					 }
+				 }
+				 
+		 
+				for(i = 0; i < customerBevs.length; i++){
+					currBev = customerBevs[i];
+					console.log("CURR BEV " + currBev);
+				
+					  console.log("BEFORE AUTO SUBMIT API CALL FOR " + currBev);
+					 $.getJSON("https://cryptollama.app/my-apis&type=2&term=" + currBev + "&longitude=" + long.toFixed(2) + "&latitude=" + lat.toFixed(2), function(result){
+						 
+						
+						 if(result.status == 200 && result.success == true){
+							 
+							 // if successful response 
+							$("#optionsHeader").css("display", "block");
+							$("#options").css("display", "block");
+							 
+							console.log("IN");
+							
+							for(i=0; i < 1; i++){
+								name = (result.info)[i].name;
+								url = (result.info)[i].url;
+								image_url = (result.info)[i].image_url;
+								street = (result.info)[i].location.address1;
+								zipcode = (result.info)[i].location.zip_code;
+								city = (result.info)[i].location.city;
+								rating = (result.info)[i].rating;
+								console.log(name);
+								
+								console.log("ZIP " + zipcode);
+								
+								//(result.term).replace(/%20/g, " ");
+					
+									
+								$("#optionResults").append("<li class='collection-item avatar'><a href="+url+"class='secondary-content'><img src='"+image_url+"'alt=''class='circle'><span class='title'>"+name+"</span><br><span>"+(result.term).replace(/%20/g, " ")+"</span></a></p><p>"+street+" "+zipcode+"<br>"+city+"</p><a href="+url+"class='secondary-content'><i class='material-icons'>grade</i><span>"+rating+ "</span></a></li>");
+				
+							}
+							
+							  
+						 }
+						
+					 })
+					 
+				 }
+			}
+			
+				
+			function submit() {
+				 
+				 // alert("SUBMITTED!");
+				 // getting values of input boxes:
+				 
+				 console.log("In 'submit' function");
+				 
+				$("#optionResults").empty();
+				 
+				 locVar = document.getElementById('specAddr').value + document.getElementById('postCode').value;
+				 console.log(locVar);
+				 // termVar = document.getElementById('what-dropdown').value;
+				 // console.log(termVar);
+				 
+				 // this is an API request, but to our MOCK Yelp API
+				 
+				 console.log("Customer's Chosen Location: " + locVar);
+				  
+				  var boxes = $(":checkbox:checked");
+				  console.log(boxes);
+				  
+				 customerBevs = [];
+				 
+				 for(i = 0; i < boxes.length; i++){
+					 // alert(i + " is " + boxes[i].checked);
+					 if(boxes[i].checked == true){
+						 bev = boxes[i].id;
+						 console.log("BEV " + bev);
+						 customerBevs.push(bev); // THIS WORKS!
+					 }
+				 }
+				 
+				//console.log(customerBevs);  // THIS WORKS! YAY :D
+		 
+				for(i = 0; i < customerBevs.length; i++){
+					currBev = customerBevs[i];
+					console.log("CURR BEV " + currBev);
+				
+				 	 console.log("BEFORE SUBMIT API CALL FOR " + currBev);
+					  
+					 $.getJSON("https://cryptollama.app/my-apis&type=1&term=" + currBev + "&location="+locVar, function(result){
+						
+						 if(result.status == 200 && result.success == true){
+							 
+							 $("#optionsHeader").css("display", "block");
+							 $("#options").css("display", "block");
+							
+							for(i=0; i < 1; i++){
+								name = (result.info)[i].name;
+								url = (result.info)[i].url;
+								image_url = (result.info)[i].image_url;
+								street = (result.info)[i].location.address1;
+								zipcode = (result.info)[i].location.zip_code;
+								city = (result.info)[i].location.city;
+								rating = (result.info)[i].rating;
+								console.log(name);
+								
+								console.log(result.info[i]);
+								console.log("ZIP " + zipcode);
+									
+								$("#optionResults").append("<li class='collection-item avatar'><a href="+url+"class='secondary-content'><img src='"+image_url+"'alt=''class='circle'><span class='title'>"+name+"</span> <br> <span>"+(result.term).replace(/%20/g, " ")+"</span></a></p><p>"+street+" "+zipcode+"<br>"+city+"</p><a href="+url+" target='_blank' class='secondary-content'><i class='material-icons'>grade</i><span>"+rating+ "</span></a></li>");
+								
+							}
+							
+							  
+						 }
+						
+					 })
+					 
+				 }
+			}
+		 
+		 
+
+		  </script> <!-- End of script -->
+		
+		</head>
+		
+		<style>
+		
+			body {
+				background-color: #E58EA1;
+				color: #4F3711;
+				font-family: "Gill Sans", sans-serif;
+			    background-image: url('notcoffeebackgroundimage.png');
+				background-size: 500px; // i like this size
+			}
+			
+			h1{
+				color: #4F3711;
+				margin-top: 10px;
+				text-align: center;
+				font-size: 80px;
+				font-weight: bolder;
+			}
+			
+			#where{
+				color: #4F3711;
+				position: relative;
+			}
+			
+			#what{
+				color: #4F3711;
+			}
+			
+			#loginButton{
+				display: block;
+				margin-left: auto;
+				//margin-right: auto;
+				margin-right: 30px;
+				margin-top: 10px;
+			}
+			
+			#customerInput{
+				display: flex;
+				font-size: 16px;
+				font-variant: none;
+				-webkit-font-smoothing: antialiased;
+				-webkit-tap-highlight-color: transparent;
+				font-feature-settings: 'ss01' on,'ss02' on,'cv01' on,'cv03' on;
+				color: rgb(0, 0, 0);
+				--reach-dialog: 1;
+				box-sizing: border-box;
+				font-family: 'Inter',sans-serif;
+				position: relative;
+				max-width: 500px;
+				width: 80%;
+				background: rgb(255, 255, 255);
+				box-shadow: rgba(0, 0, 0, 0.01) 0px 0px 1px, rgba(0, 0, 0, 0.04) 0px 4px 8px, rgba(0, 0, 0, 0.04) 0px 16px 24px, rgba(0, 0, 0, 0.01) 0px 24px 32px;
+				border-radius: 24px;
+				margin-top: 4rem;
+				margin-left: auto;
+				margin-right: auto;
+				z-index: 1;
+				
+				padding:2rem;
+				min-height:100px;
+				transform: translate(-50%, -70%);
+			}
+			
+			@media screen and (max-width: 950px) {
+				  #autoLoc {
+					transform: translate(0%, 40%);
+				  }
+			}
+			
+			#spaceDiv {
+				padding-top: 20px;
+			}
+			
+			.input{
+				width: 170px;
+				height: 20px;
+				font-size: 18px;
+			}
+			
+			#where-input{
+				width: 200px;
+				padding-left: 10px;
+				
+			}
+			
+			#what-input{
+				width: 200px;
+			}
+			
+			/* #what-dropdown{
+				text-align: center;
+			} */
+			
+			#autoFind{
+				margin-left: 10px;
+				border-radius: 12px;
+				background-color: #4F3711;
+				color: white;
+				width: 100px;
+				height: 50px;
+			}
+			
+			#optionsHeader{
+				margin-left: 45px;
+				font-size: 50px;
+			}
+			
+			.row{
+				background-color: #E5E5E5;
+				color: #282828;
+				height: 50px;
+				padding-top: 10px;
+				padding-left: 5px;
+				padding-right: 5px;
+				width: 200px;
+				margin-left: 45px;
+			}
+			
+			
+			#options {
+				position: relative;
+				display: none;
+			}
+			
+			.wrapper {
+				margin-top: 150px;
+			}
+			
+			// for an Image w CHECKBOX
+			* {
+				  padding: 0;
+				  margin: 0;
+				  box-sizing: border-box;
+			}
+				body {
+				  background-color: #eef5ff;
+				}
+				
+				.wrapper {
+				  width: 100%;
+				  position: absolute;
+				  transform: translate(-50%, -50%);
+				  top: 60%;
+				  left: 50%;
+				  display: grid;
+				  place-items: center;
+				  gap: 15px;
+				}
+				.container {
+				  height: 200px;
+				  width: 200px;
+				  background-color: #ffffff;
+				  box-shadow: 0 0 25px rgba(17, 1, 68, 0.08);
+				  border-radius: 8px;
+				  position: relative;
+				  cursor: pointer;
+				}
+	
+				.container img{
+				  width: 80%;
+				  height: 80%;
+				  position: absolute;
+				  margin: auto;
+				  left: 0;
+				  right: 0;
+				  top: 0;
+				  bottom: 0;
+				  cursor: pointer;
+				}
+
+				.container2 {
+				  height: 200px;
+				  width: 200px;
+				  background-color: #ffffff;
+				  box-shadow: 0 0 25px rgba(17, 1, 68, 0.08);
+				  border-radius: 8px;
+				  position: relative; // relative vs. absolute
+				  cursor: pointer;
+				}
+					
+				.container2 img{
+				  width: 80%;
+				  height: 80%;
+				  position: absolute;
+				  margin: auto;
+				  left: 0;
+				  right: 0;
+				  top: 0;
+				  bottom: 0;
+				  cursor: pointer;
+				}	
+			
+				
+				@media screen and (min-width: 200px) {
+					.container{
+						top: 300;
+						right: 110;
+					}
+					.container2{
+						top: -345;
+						left: 115;
+					}
+					
+				
+				}
+							
+				
+				@media screen and (min-width: 950px) {
+					// when it is big
+				  .wrapper {
+					width: 100%;
+					position: absolute;
+					transform: translate(-50%, -50%);
+					top: 50%;
+					left: 50%;
+					grid-template-columns: repeat(3, 1fr);
+					gap: 10px;
+				  }
+				  .container {
+					top: 0;
+					left: 10;
+					height: 200px;
+					width: 400px;
+					background-color: #ffffff;
+					box-shadow: 0 0 25px rgba(17, 1, 68, 0, .08);
+					border-radius: 8px;
+					position: relative;
+					cursor: pointer;
+				  }
+				  
+				  .container2 {
+					  top: 10;
+					 left: 15;
+					  height: 200px;
+					  width: 200px;
+					  background-color: #ffffff;
+					  box-shadow: 0 0 25px rgba(17, 1, 68, 0, .08);
+					  border-radius: 8px;
+					  position: relative;
+					  cursor: pointer;
+				  }
+				  
+				  .container2 img{
+						width: 80%;
+						height: 80%;
+						position: absolute;
+						margin: auto;
+						left: 0;
+						right: 0;
+						top: 0;
+						bottom: 0;
+						cursor: pointer;
+				   }	
+ 				
+			} // THIS IS NECESSARY !!!
+			
+			img{
+				width: 70%;
+				position: absolute;
+				margin: auto;
+				left: 0;
+				right: 0;
+				top: 0;
+				bottom: 0;
+				cursor: pointer;
+			}
+			
+			@media screen and (min-width: 950px){
+				.wrapper{
+					grid-template-columns: repeat(3, 1fr);
+					gap: 10px;
+				}
+			
+				.container {
+					height: 300px;
+					width: 300px;
+				}
+				
+				.container2 {
+					height: 300px;
+					width: 300px;
+				}
+				
+				#where-input{
+					width: 190px;
+				}
+			
+			}
+			
+			#customerInput{
+				margin-top: 100px;
+				transform: translate(2%, 450%);
+			}
+			
+			.drink-label {
+				margin-left: 10px;
+			}
+			
+			.drink-image{
+				width: 50px;
+				height: 150px;
+				padding-top: 15px;
+			}
+			
+			#submit { 	
+				left:48%;
+				top:220;
+				transform: translate(-10%, 1540%);
+				position:relative;
+				text-align:center;
+			}
+			
+			@media screen and (max-width: 950px){
+				
+				#submit{
+					margin-left: 79px;
+					margin-top: -80px;
+				}
+				
+				#optionResults {
+					padding-top: 190px;
+					width: 90%;
+					right: 60;
+				}
+				
+			}
+			
+			#optionResults {
+				margin-left: 100px;
+				margin-right: 100px;
+				margin-top: 30%;
+				transform: translate(0%, 52%);
+			}
+			
+			#optionsHeader {
+				margin-top: 120px;
+				transform: translate(2%, 1000%);
+				display: none;
+			}
+			
+			#autoLoc{
+				font-size: 10px;
+				margin-left: 30px;
+			}
+			
+			#logo {
+				height: 160px;
+				width: 410px;
+				display: block;
+				margin-top: 5;
+				margin-left: auto;
+				margin-right: auto;
+			}
+			
+			.modal {
+				margin-top: 100px;
+				z-index:9999;
+			}
+					
+			.modal-content{
+				color: black;
+			}
+			
+			.loginClose{
+				position: absolute;
+				top: 10px;
+				right: 10px;
+			}
+			
+			#login-window{
+				display: none;
+			}
+			
+			#userLogged{
+				position: absolute;
+				top: 10px;
+				right: 10px;
+			}
+			
+			.phoneNumberLoggedIn{
+				font-size: 15px;
+				font-weight: 500;
+				margin: 10px;
+				padding:10px;
+				border-radius:10px;
+				border: 1px solid rgb(247, 248, 250);
+				background-color: rgb(247, 248, 250);
+				align-content: right;
+				
+			}
+			
+			.phoneNumberLoggedIn:hover{
+				border: 1px solid rgb(207, 210, 221);
+				cursor:pointer;
+			}
+			
+			#logoutModal{
+				display: none;
+			}
+		
+			
+			
+		</style>
+		
+		<body>
+			
+			<div id="userLogged">
+					<div class="modal" id="login-window">
+					  <div class="modal-content">
+						  <h5>Log in with your phone number </h5>
+						  <div style='font-size:12px'>We'll send you a text message to log in. Please make sure to put country code - e.g. +1 for USA</div>
+						  <form onsubmit="handleLogin(event)">
+							<div>
+								<input style="margin-top:2rem;width:20rem" type="text" name="phone" required="required" maxlength="20" value="+1"/>
+							</div>
+							
+							<button style="margin-top:2rem" class='btn' type="submit">Log In</button>
+						  </form>
+					  </div>
+					</div>
+			</div>
+			
+			<div id="logoutModal" class="modal"> 
+				<div class="modal-content"> 
+					<h4 id="logoutConfirmMessage">Are you sure you want to logout?</h4> 
+				</div> 
+				<div class="modal-footer">
+					<button class="modal-close waves-effect waves-green btn-flat" onClick='completeLogout();'>Yes</button>
+					<button class="modal-close waves-effect waves-green btn-flat" onClick='closeModal("#logoutModal")'>No</button>
+				</div>
+			</div>
+			
+			
+	
+			<img id="logo" src = "notcoffeelogo.png"> </img>
+			
+			<div id="customerInput">
+				  <label for="custAddr" class="input" id="where"> Where? </label>
+				<form>
+					 <input id="specAddr" name="address" placeholder="Address" type="text" autocomplete="address-line1" autocomplete = "address-line2"/>
+					 <input id="postCode" name="postcode" placeholder="Postcode" type="text" autocomplete="postal-code"/> 	
+			    </form>
+				
+				<button class='btn' id='autoLoc' onClick='autoLoc()'> AutoLocate </button> 
+				<!-- <a id="submit" onClick='submit()' class="waves-effect waves-light btn">Submit</a> -->
+			</div> 
+					 <!-- <input name="apartment" placeholder="Apartment number" type="text" autocomplete="address-line2"/>
+					 <input name="city" placeholder="City" type="text" autocomplete="address-level2"/>
+					 <input name="state" placeholder="State" type="text" autocomplete="address-level1"/>
+					 <input name="country" placeholder="Country" type="text" autocomplete="country"/> -->
+				  
+			  
+			  
+			<!-- FROM TUTORIAL: these are all of our drink options -->
+			<div id="gallery">
+				
+				<!-- adding ARROW buttons -->
+				
+				<ul class="wrapper">
+				  <li class="container">
+					<p>
+						<label class ='drink-label'>
+							<input id="matcha" type="checkbox" class="filled-in" checked="unchecked" />
+							<span>Matcha Latte</span>
+						</label>
+					</p>
+					<label for="drink-1">
+					  <img class="drink-image"  src="matcha.jpg"/>
+					</label>
+				  </li> 
+				  
+				  <li class="container">
+						<p>
+							  <label class ='drink-label'>
+								  <input id="chai" type="checkbox" class="filled-in" checked="checked" />
+								  <span>Chai</span>
+								</label>
+						</p>	
+					  <label for="drink-3">
+						<img class="drink-image" src="masalachai.jpg" />
+					  </label>
+					</li>
+				  
+				  <li class="container">
+					  <p>
+						  <label class ='drink-label'>
+							  <input id="turmeric latte" type="checkbox" class="filled-in" checked="unchecked" />
+							  <span>Golden Mylk</span>
+							</label>
+					  </p>
+					<label for="drink-2">
+					  <img class="drink-image" src="goldenmylk.jpeg" />
+					</label>
+				  </li>
+				  
+
+			   
+			<li class="container2">
+				   <p>
+					 <label class ='drink-label'>
+						 <input id="hot chocolate" type="checkbox" class="filled-in" checked="checked" />
+						 <span>Hot Chocolate</span>
+					 </label>
+				   </p>	
+				 <label for="drink-3">
+				   <img class="drink-image" src="hotchoc1.jpeg" />
+				 </label>
+			</li>
+				 
+			<li class="container2">
+					 <p>
+					   <label class ='drink-label'>
+						   <input id="bubble tea" type="checkbox" class="filled-in" checked="checked" />
+						   <span>Bubble Tea</span>
+					   </label>
+					 </p>	
+				   <label for="drink-3">
+					 <img class="drink-image" src="bubbletea.png" />
+				   </label>
+			</li>
+			
+			<li class="container2">
+				 <p>
+				   <label class ='drink-label'>
+					   <input id="smoothies" type="checkbox" class="filled-in" checked="checked" />
+					   <span>Smoothies & Juices</span>
+				   </label>
+				 </p>	
+			   <label for="drink-3">
+				 <img class="drink-image" src="smoothies1.jpeg" />
+			   </label>
+			 </li>
+				  
+			</ul>	
+				
+			</div>
+
+			<a id="submit" onClick='submit()' class="waves-effect waves-light btn">Submit</a>
+
+					
+			<h2 id="optionsHeader"> Options: </h2>
+			
+			<div id="options">
+				<ul id="optionResults" class="collection">
+			</div>
+				
+				<!-- <div class="row"> Option 1 </div>
+				<div class="row"> Option 2 </div>
+				<div class="row"> Option 3 </div> -->
+			
+		</div>
+			
+			<!-- <button id="currLoc" onClick='getLocation();'> Get Curr Location </button> -->
+		
+	</body>
+	
+	<script>
+	/* 2️⃣ Initialize Magic Instance */
+	  let magic = new Magic("pk_live_5B815FC39E21482D");
+	  
+	  /* 3️⃣ Implement Render Function, that I will call on click of the submit button */
+	  const checkMagicSDKForLoginStatus = async (whatActionToTakeNext) => {
+		console.log("Checking MAGIC for LogIn with action: " + whatActionToTakeNext);
+		const isLoggedIn = await magic.user.isLoggedIn();
+		console.log("LoggedIn: " + isLoggedIn);
+				
+	
+		if (isLoggedIn) {
+			/* Get user metadata including phone */
+			const userMetadata = await magic.user.getMetadata();
+			console.log("User Meta Data: " + userMetadata.phoneNumber);
+			
+			html = `
+			<div id="currUserInfo">
+			  <span class='phoneNumberLoggedIn tooltipped' data-tooltip='Your phone number'>` + userMetadata.phoneNumber + `</span> 
+			  <span> <i class="material-icons phoneNumberLoggedIn tooltipped" id='myLogoutButton' data-tooltip="Log Out" onclick='handleLogout();'> logout </i> </span>
+			  
+			</div>
+			`;
+			
+			if(whatActionToTakeNext == "initial-app-load"){
+				$("#userLogged").empty()
+				console.log("LOADING OF APP #1")
+				// TEST ADD HERE:
+				apiRequest("addUserAlert", userMetadata.phoneNumber, "added-user");
+			}
+			else if(whatActionToTakeNext == "initial-chosen-login"){
+				// when initial-chosen-login??? ***
+				$("#userLogged").empty()
+				console.log("Get User List of fave cafés")
+				// TO DO:
+				// add in a function to get list of users places here or smth
+				apiRequest("addUserAlert", userMetadata.phoneNumber, "added-user");
+				console.log("MADE ADD USER ALERT API REQ")
+			
+			}
+			
+			$("#userLogged").append(html);
+			console.log("Finished appending LOGGED html");
+		}
+		
+		else if(!isLoggedIn){
+			  console.log("Curr WATTN: " + whatActionToTakeNext);
+			  if(whatActionToTakeNext != "initial-app-load"){	
+				  
+				  if(whatActionToTakeNext != "initial-chosen-login"){
+					  alert("Sorry! You are not logged in!");
+					  console.log("Can't continue with " + whatActionToTakeNext + " until you login!")
+					  loginWindow();
+				  }
+				  else{
+					  console.log("OK.")
+					  loginWindow();
+				  }
+				  // don't want to force login if the user
+				  // is just refreshing the page
+				  // they will be prompted on add of alert
+				  
+			  }
+			  else if(whatActionToTakeNext == 'initial-app-load' | whatActionToTakeNext == 'remove-user-alert'){
+					$("#userLogged").append("<button class='btn modal-trigger' id='loginButton' onClick='initialChosenLogin();'> Log In with SMS </button>");
+		      }
+		  }
+	}
+				
+	/* 4️⃣ Implement Login Handler */
+	  const handleLogin = async (e) => {
+		e.preventDefault();
+		const phoneNumber = new FormData(e.target).get("phone");
+		if (phoneNumber) {
+		  /* One-liner login 🤯 */
+		  await magic.auth.loginWithSMS({ phoneNumber });
+		  console.log("handling login");
+		  checkMagicSDKForLoginStatus('initial-app-load');
+		  // render again so that login info can show up
+		  // used initial-app-load so that it retrieves 
+		  // corresponding user-alerts & appends to DOM
+		}
+	  };
+
+	  /* 5️⃣ Implement Logout Handler */
+	  const handleLogout = async () => {
+		console.log("HANDLE LOGOUT");
+		//render();
+		// removed render() to avoid default log-back-in modal
+		
+		completeLogout(); // completing logout here
+		
+		// var modalInstance =  M.Modal.getInstance($("#logoutModal"));
+		// TODO: need to add logout modal
+		modalInstance.open();
+	};
+	</script>
+	
+	
+	<script>
+	
+		 function apiRequest(action, userInfo, substring){
+			 // currencyCode is null (for getValidCoinList/getUserAlerts)
+			 console.log("Making API request!");
+			 console.log("ACTION " + action);
+			 // create base URL, and add params according to action
+			 
+			 // querying cryptoLlama API
+			 // check port number with /coin-alerts again
+			 // and do another for notCoffee...
+			 var baseURL = "/not-coffee?action=" + action + "&userInfo=" + userInfo;
+			 
+			 console.log("BASE URL is: " + baseURL);
+			 
+			 if(action == "addUserAlert"){
+				// TO DO add certain things to base URL, if need be (beyond ph) ***
+				console.log("URL is in " + action + ": " + baseURL);
+			 }
+			 
+			 var url = baseURL;
+			 
+			 $.getJSON(url, function(result){ // the actual API request
+			 
+				console.log("BACK FROM MAKING API REQUEST"); // and getting data from DB
+				console.log("ACTION " + action);
+				console.log("USER INFO IS: " + userInfo)
+				
+				if(action == "addUserAlert"){
+					
+					//we are in the callback of the AJAX call, so remove the progress bar spinner thingy
+					
+					// $("#submit-add-alert-progress").css("visibility", "hidden");
+					
+					console.log("addUserAlert CURRRR: " + result.status);
+					
+					// alert($(".user-alert-row").length); this is the CURRENT SIZE (before the add)
+					
+					
+					if(result.success == true){
+						console.log(result);
+						console.log("addUserAlert for " + result.info.curr + " was successful!");
+						// debugAlert(result.info.userInfo);
+						
+					
+							if ($(".user-alert-row").length == 0){
+								console.log("NO ALERTS TO START WITH, DIV IS EMPTY!");
+								$("#userAlerts").empty(); 
+								// this removes the "You don't have any alerts message"
+								// BEFORE the alert is added (w/ func call below)!
+							}
+		
+							//MA Note 3/8/2022 - needed to set these two object fields to match what comes through when building the DOM on GetCoins()
+							// result.info.pctThreshold = threshold;
+							// result.info.coinID=currencyCode;
+							
+							// this is for COINS
+							// addUserAlertToDOM(result.info.coinID, result.info.pctThreshold);
+							
+							showSuccessMessage("addUserAlert", result);
+							
+					}
+				}
+			})
+		}
+	// needs to be in separate script for it to be 
+	// reached by Log In With SMS button
+		function initialChosenLogin(){
+			console.log('initialChosenLogin test'); // this works
+			checkMagicSDKForLoginStatus("initial-chosen-login");
+		}
+		
+		function completeLogout(){
+			// debugAlert("IN COMPLETE LOGOUT");
+			magic.user.logout();
+			
+			// race between execution of two functions
+			// HACKY, needs to be fixed (with async await or callback...older)
+			setTimeout(function() {
+				window.location.href = "/notCoffeeMockBuild.html"; // using curr domain
+				}, 2000); // waiting two seconds (2000 = 1.5)
+				
+		}
+		
+	</script>
+</HTML> 
